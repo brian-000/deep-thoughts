@@ -8,6 +8,7 @@ import NoMatch from './pages/NoMatch';
 import SingleThought from './pages/SingleThought';
 import Profile from './pages/Profile';
 import Signup from './pages/Signup';
+import { setContext } from '@apollo/client/link/context';
 
 
 import Home from './pages/Home';
@@ -16,9 +17,19 @@ const httpLink = createHttpLink({
   //backend server runs on 3001 and needs absolute path
   uri: '/graphql',
 });
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
 //connecting client to backend
 const client = new ApolloClient({
-  link: httpLink,
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 function App() {
